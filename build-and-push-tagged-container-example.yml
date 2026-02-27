@@ -10,7 +10,7 @@ on:
 
 jobs:
   build-and-push-tagged:
-    uses: Ruixey/workflows/.github/workflows/build-and-push-tagged-container.yml@main
+    uses: spizzadev/workflows/.github/workflows/build-and-push-tagged-container.yml@main
     with:
       image-name: ${{ github.repository }}
       image-authors: my-org

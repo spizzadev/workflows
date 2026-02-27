@@ -10,7 +10,7 @@ on:
 
 jobs:
   build-and-push:
-    uses: Ruixey/workflows/.github/workflows/build-and-push-container.yml@main
+    uses: spizzadev/workflows/.github/workflows/build-and-push-container.yml@main
     with:
       image-name: ${{ github.repository }}
       image-authors: my-org
