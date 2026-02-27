@@ -1,0 +1,20 @@
+name: Example Usage of Build & Push Container
+
+# This example shows how to use the build-and-push-container.yml reusable workflow.
+# The image is built and pushed on every push.
+# The :latest tag is only updated when pushing to the default branch (main).
+# The branch name is used as the Docker tag (e.g. feature-foo → ghcr.io/my-org/my-app:feature-foo).
+
+on:
+  push:
+
+jobs:
+  build-and-push:
+    uses: Ruixey/workflows/.github/workflows/build-and-push-container.yml@main
+    with:
+      image-name: ${{ github.repository }}
+      image-authors: my-org
+      # default-branch: main   # uncomment to override which branch updates :latest
+    secrets:
+      username: ${{ github.actor }}
+      password: ${{ secrets.GITHUB_TOKEN }}

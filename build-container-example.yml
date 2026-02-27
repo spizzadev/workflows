@@ -1,0 +1,16 @@
+name: Example Usage of Build Container
+
+# This example shows how to use the build-container.yml reusable workflow.
+# The image is built on every push and pull request but never pushed to a registry.
+# Useful for verifying that the Dockerfile builds successfully.
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    uses: Ruixey/workflows/.github/workflows/build-container.yml@main
+    with:
+      image-name: ${{ github.repository }}
+      image-authors: my-org

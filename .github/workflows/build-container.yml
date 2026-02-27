@@ -1,0 +1,57 @@
+name: Build Container
+
+on:
+  workflow_call:
+    inputs:
+      registry:
+        type: string
+        default: ghcr.io
+        description: Container registry URL
+      image-name:
+        type: string
+        default: ''
+        description: Image name, e.g. my-org/my-app (defaults to repository name)
+      context:
+        type: string
+        default: '.'
+        description: Docker build context path
+      dockerfile:
+        type: string
+        default: 'Dockerfile'
+        description: Path to the Dockerfile
+      image-authors:
+        type: string
+        default: ''
+        description: Value for the org.opencontainers.image.authors label
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ inputs.registry }}/${{ inputs.image-name || github.repository }}
+          labels: |
+            org.opencontainers.image.authors=${{ inputs.image-authors }}
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ inputs.context }}
+          file: ${{ inputs.dockerfile }}
+          push: false
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

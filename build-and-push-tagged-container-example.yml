@@ -1,0 +1,19 @@
+name: Example Usage of Build & Push Tagged Container
+
+# This example shows how to use the build-and-push-tagged-container.yml reusable workflow.
+# The image is always built. It is pushed to the registry only when the commit is tagged.
+# On tagged commits the image receives the tag name and :latest.
+# On untagged commits it is built but not pushed (useful for catching build errors early).
+
+on:
+  push:
+
+jobs:
+  build-and-push-tagged:
+    uses: Ruixey/workflows/.github/workflows/build-and-push-tagged-container.yml@main
+    with:
+      image-name: ${{ github.repository }}
+      image-authors: my-org
+    secrets:
+      username: ${{ github.actor }}
+      password: ${{ secrets.GITHUB_TOKEN }}

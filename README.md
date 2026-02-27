@@ -1,63 +1,41 @@
 # Reusable Workflows
 
-This repository contains reusable GitHub Actions workflows for common CI/CD tasks.
+This repository contains reusable GitHub Actions workflows for building and publishing Docker container images.
 
 ## Available Workflows
 
-### build-and-deploy-container.yml
+### build-container.yml
 
-A flexible workflow for building and deploying Docker containers with the following features:
-
-- **Builds container on every push** - Always builds the Docker image to catch build errors early
-- **Automatic deployment on tagged commits** - Automatically deploys when a commit is tagged
-- **Manual deployment option** - Allows manual deployment of untagged commits via the `force-deploy` input
-
-#### Features
-
-- **Smart tagging strategy:**
-  - Tagged commits: Uses `latest` and the Git tag name
-  - Forced deployments on untagged commits: Uses SHA-based tag
-  - Build-only mode: No tags pushed to registry
-
-- **Security:** Uses cosign to sign published Docker images
-- **Efficiency:** Leverages GitHub Actions cache for faster builds
-
-#### Usage
-
-```yaml
-name: Build and Deploy My App
-
-on:
-  push:
-    branches:
-      - main
-  workflow_dispatch:
-    inputs:
-      force-deploy:
-        description: 'Force deployment even on untagged commits'
-        required: false
-        type: boolean
-        default: false
-
-jobs:
-  build-and-deploy:
-    uses: Ruixey/workflows/.github/workflows/build-and-deploy-container.yml@main
-    with:
-      registry: ghcr.io
-      image-name: my-org/my-app
-      force-deploy: ${{ github.event.inputs.force-deploy || false }}
-    secrets:
-      username: ${{ github.actor }}
-      password: ${{ secrets.GITHUB_TOKEN }}
-```
+Builds a Docker image but never pushes it to a registry. Use this to validate that the Dockerfile compiles correctly on every push or pull request.
 
 #### Inputs
 
-| Input | Required | Type | Default | Description |
-|-------|----------|------|---------|-------------|
-| `registry` | Yes | string | - | Container registry URL (e.g., `ghcr.io`, `docker.io`) |
-| `image-name` | Yes | string | - | Full image name including organization/user |
-| `force-deploy` | No | boolean | `false` | Force deployment even on untagged commits |
+| Input | Default | Description |
+|-------|---------|-------------|
+| `registry` | `ghcr.io` | Container registry URL |
+| `image-name` | repository name | Image name, e.g. `my-org/my-app` |
+| `context` | `.` | Docker build context path |
+| `dockerfile` | `Dockerfile` | Path to the Dockerfile |
+| `image-authors` | _(empty)_ | Value for the `org.opencontainers.image.authors` label |
+
+---
+
+### build-and-push-container.yml
+
+Builds and **always pushes** the image. Uses the branch name as the Docker tag. The `:latest` tag is only updated when pushing to the configured default branch.
+
+The published image is always signed with [cosign](https://github.com/sigstore/cosign).
+
+#### Inputs
+
+| Input | Default | Description |
+|-------|---------|-------------|
+| `registry` | `ghcr.io` | Container registry URL |
+| `image-name` | repository name | Image name, e.g. `my-org/my-app` |
+| `context` | `.` | Docker build context path |
+| `dockerfile` | `Dockerfile` | Path to the Dockerfile |
+| `default-branch` | `main` | Branch on which the `:latest` tag is pushed |
+| `image-authors` | _(empty)_ | Value for the `org.opencontainers.image.authors` label |
 
 #### Secrets
 
@@ -66,31 +44,37 @@ jobs:
 | `username` | Yes | Registry username |
 | `password` | Yes | Registry password or token |
 
-#### Behavior
+---
 
-1. **On every push (untagged commits):**
-   - Builds the Docker image
-   - Does NOT push to registry (unless `force-deploy: true`)
-   - Validates that the build succeeds
+### build-and-push-tagged-container.yml
 
-2. **On tagged commits:**
-   - Builds the Docker image
-   - Pushes to registry with tags: `latest` and the Git tag name
-   - Signs the image with cosign
+Builds the image on every push. Only pushes to the registry when the commit carries a Git tag. On tagged commits the image receives both the tag name and `:latest`.
 
-3. **Manual deployment (workflow_dispatch with force-deploy: true):**
-   - Builds the Docker image
-   - Pushes to registry with SHA-based tag
-   - Signs the image with cosign
+The published image is always signed with [cosign](https://github.com/sigstore/cosign).
 
-### deploy-tagged-container.yml
+#### Inputs
 
-The original workflow that only deploys on tagged commits. Builds containers on all commits but only pushes to the registry when a Git tag is present.
+| Input | Default | Description |
+|-------|---------|-------------|
+| `registry` | `ghcr.io` | Container registry URL |
+| `image-name` | repository name | Image name, e.g. `my-org/my-app` |
+| `context` | `.` | Docker build context path |
+| `dockerfile` | `Dockerfile` | Path to the Dockerfile |
+| `image-authors` | _(empty)_ | Value for the `org.opencontainers.image.authors` label |
 
-### deploy-container.yml
+#### Secrets
 
-A simpler workflow that builds and deploys on every push (except pull requests).
+| Secret | Required | Description |
+|--------|----------|-------------|
+| `username` | Yes | Registry username |
+| `password` | Yes | Registry password or token |
+
+---
 
 ## Examples
 
-See the `build-and-deploy-example.yml` file for a complete example of using the `build-and-deploy-container.yml` workflow.
+| File | Demonstrates |
+|------|-------------|
+| `build-container-example.yml` | Build-only on every push/PR |
+| `build-and-push-container-example.yml` | Always push, branch tag + `:latest` on main |
+| `build-and-push-tagged-container-example.yml` | Push only on tagged commits |
