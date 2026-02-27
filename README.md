@@ -49,7 +49,6 @@ Outputs `digest` and `tags` so the optional `sign-container.yml` workflow can be
 | Output | Description |
 |--------|-------------|
 | `digest` | Image digest (`sha256:...`) |
-| `image` | Full image reference without tag (e.g. `ghcr.io/my-org/my-app`) |
 
 ---
 
@@ -81,7 +80,6 @@ Outputs `digest`, `tags`, and `pushed` so the optional `sign-container.yml` work
 | Output | Description |
 |--------|-------------|
 | `digest` | Image digest (`sha256:...`), empty if no push occurred |
-| `image` | Full image reference without tag, empty if no push occurred |
 | `pushed` | `true` if the image was pushed (i.e. commit was tagged), `false` otherwise |
 
 ---

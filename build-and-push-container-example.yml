@@ -32,5 +32,5 @@ jobs:
   #     id-token: write
   #     packages: write
   #   with:
-  #     image: ${{ needs.build-and-push.outputs.image }}
+  #     image: ghcr.io/${{ github.repository }}
   #     digest: ${{ needs.build-and-push.outputs.digest }}
