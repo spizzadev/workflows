@@ -34,9 +34,9 @@ on:
       digest:
         description: Image digest (sha256:...), empty if no push occurred
         value: ${{ jobs.build.outputs.digest }}
-      tags:
-        description: Newline-separated list of image tags that were pushed, empty if no push occurred
-        value: ${{ jobs.build.outputs.tags }}
+      image:
+        description: Full image reference (registry/name) without tag, empty if no push occurred
+        value: ${{ jobs.build.outputs.image }}
       pushed:
         description: Whether the image was pushed (true only on tagged commits)
         value: ${{ jobs.build.outputs.pushed }}
@@ -49,12 +49,16 @@ jobs:
       packages: write
     outputs:
       digest: ${{ steps.build-and-push.outputs.digest }}
-      tags: ${{ steps.meta-tagged.outputs.tags }}
+      image: ${{ steps.image-ref.outputs.ref }}
       pushed: ${{ steps.tag.outputs.found }}
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Set image reference output
+        id: image-ref
+        run: echo "ref=${{ inputs.registry }}/${{ inputs.image-name || github.repository }}" >> $GITHUB_OUTPUT
 
       - name: Check if commit is tagged
         id: tag

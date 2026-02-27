@@ -32,5 +32,5 @@ jobs:
   #     id-token: write
   #     packages: write
   #   with:
-  #     tags: ${{ needs.build-and-push-tagged.outputs.tags }}
+  #     image: ${{ needs.build-and-push-tagged.outputs.image }}
   #     digest: ${{ needs.build-and-push-tagged.outputs.digest }}

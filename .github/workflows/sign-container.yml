@@ -3,10 +3,10 @@ name: Sign Container
 on:
   workflow_call:
     inputs:
-      tags:
+      image:
         required: true
         type: string
-        description: Newline-separated list of full image tags to sign
+        description: Full image reference without tag, e.g. ghcr.io/my-org/my-app
       digest:
         required: true
         type: string
@@ -26,7 +26,4 @@ jobs:
           cosign-release: 'v2.2.4'
 
       - name: Sign the published Docker image
-        env:
-          TAGS: ${{ inputs.tags }}
-          DIGEST: ${{ inputs.digest }}
-        run: echo "${TAGS}" | xargs -I {} cosign sign --yes {}@${DIGEST}
+        run: cosign sign --yes ${{ inputs.image }}@${{ inputs.digest }}
