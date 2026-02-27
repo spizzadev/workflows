@@ -26,6 +26,8 @@ Builds and **always pushes** the image. Uses the branch name as the Docker tag. 
 
 The published image is always signed with [cosign](https://github.com/sigstore/cosign).
 
+> **Note:** If enabling `sign: true`, the caller must also grant `id-token: write` permission and requires a GitHub plan that supports OIDC (not available on free orgs).
+
 #### Inputs
 
 | Input | Default | Description |
@@ -36,6 +38,7 @@ The published image is always signed with [cosign](https://github.com/sigstore/c
 | `dockerfile` | `Dockerfile` | Path to the Dockerfile |
 | `default-branch` | `main` | Branch on which the `:latest` tag is pushed |
 | `image-authors` | _(empty)_ | Value for the `org.opencontainers.image.authors` label |
+| `sign` | `false` | Sign the published image with cosign (requires OIDC — not available on free orgs) |
 
 #### Secrets
 
@@ -52,6 +55,8 @@ Builds the image on every push. Only pushes to the registry when the commit carr
 
 The published image is always signed with [cosign](https://github.com/sigstore/cosign).
 
+> **Note:** If enabling `sign: true`, the caller must also grant `id-token: write` permission and requires a GitHub plan that supports OIDC (not available on free orgs).
+
 #### Inputs
 
 | Input | Default | Description |
@@ -61,6 +66,7 @@ The published image is always signed with [cosign](https://github.com/sigstore/c
 | `context` | `.` | Docker build context path |
 | `dockerfile` | `Dockerfile` | Path to the Dockerfile |
 | `image-authors` | _(empty)_ | Value for the `org.opencontainers.image.authors` label |
+| `sign` | `false` | Sign the published image with cosign (requires OIDC — not available on free orgs) |
 
 #### Secrets
 

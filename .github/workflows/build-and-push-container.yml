@@ -27,6 +27,10 @@ on:
         type: string
         default: ''
         description: Value for the org.opencontainers.image.authors label
+      sign:
+        type: boolean
+        default: false
+        description: Sign the published image with cosign (requires OIDC, not available on free orgs)
     secrets:
       username:
         required: true
@@ -40,14 +44,15 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      id-token: write
       packages: write
+      id-token: write
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Install cosign
+        if: inputs.sign
         uses: sigstore/cosign-installer@v3.5.0
         with:
           cosign-release: 'v2.2.4'
@@ -86,6 +91,7 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Sign the published Docker image
+        if: inputs.sign
         env:
           TAGS: ${{ steps.meta.outputs.tags }}
           DIGEST: ${{ steps.build-and-push.outputs.digest }}

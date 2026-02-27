@@ -11,6 +11,10 @@ on:
 jobs:
   build-and-push:
     uses: spizzadev/workflows/.github/workflows/build-and-push-container.yml@main
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
     with:
       image-name: ${{ github.repository }}
       image-authors: my-org
