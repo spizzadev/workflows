@@ -4,6 +4,9 @@ name: Example Usage of Build & Push Tagged Container
 # The image is always built. It is pushed to the registry only when the commit is tagged.
 # On tagged commits the image receives the tag name and :latest.
 # On untagged commits it is built but not pushed (useful for catching build errors early).
+#
+# Signing is optional. Uncomment the 'sign' job to enable it.
+# Signing requires OIDC support — works on personal repos and paid orgs.
 
 on:
   push:
@@ -14,10 +17,20 @@ jobs:
     permissions:
       contents: read
       packages: write
-      id-token: write
     with:
       image-name: ${{ github.repository }}
-      image-authors: my-org
+      image-authors: ${{ github.actor }}
     secrets:
       username: ${{ github.actor }}
       password: ${{ secrets.GITHUB_TOKEN }}
+
+  # sign:
+  #   needs: build-and-push-tagged
+  #   if: needs.build-and-push-tagged.outputs.pushed == 'true'
+  #   uses: spizzadev/workflows/.github/workflows/sign-container.yml@main
+  #   permissions:
+  #     id-token: write
+  #     packages: write
+  #   with:
+  #     tags: ${{ needs.build-and-push-tagged.outputs.tags }}
+  #     digest: ${{ needs.build-and-push-tagged.outputs.digest }}

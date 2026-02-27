@@ -4,6 +4,9 @@ name: Example Usage of Build & Push Container
 # The image is built and pushed on every push.
 # The :latest tag is only updated when pushing to the default branch (main).
 # The branch name is used as the Docker tag (e.g. feature-foo → ghcr.io/my-org/my-app:feature-foo).
+#
+# Signing is optional. Uncomment the 'sign' job to enable it.
+# Signing requires OIDC support — works on personal repos and paid orgs.
 
 on:
   push:
@@ -14,11 +17,20 @@ jobs:
     permissions:
       contents: read
       packages: write
-      id-token: write
     with:
       image-name: ${{ github.repository }}
-      image-authors: my-org
+      image-authors: ${{ github.actor }}
       # default-branch: main   # uncomment to override which branch updates :latest
     secrets:
       username: ${{ github.actor }}
       password: ${{ secrets.GITHUB_TOKEN }}
+
+  # sign:
+  #   needs: build-and-push
+  #   uses: spizzadev/workflows/.github/workflows/sign-container.yml@main
+  #   permissions:
+  #     id-token: write
+  #     packages: write
+  #   with:
+  #     tags: ${{ needs.build-and-push.outputs.tags }}
+  #     digest: ${{ needs.build-and-push.outputs.digest }}

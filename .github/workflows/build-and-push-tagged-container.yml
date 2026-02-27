@@ -23,10 +23,6 @@ on:
         type: string
         default: ''
         description: Value for the org.opencontainers.image.authors label
-      sign:
-        type: boolean
-        default: false
-        description: Sign the published image with cosign (requires OIDC, not available on free orgs)
     secrets:
       username:
         required: true
@@ -34,6 +30,16 @@ on:
       password:
         required: true
         description: Registry password or token
+    outputs:
+      digest:
+        description: Image digest (sha256:...), empty if no push occurred
+        value: ${{ jobs.build.outputs.digest }}
+      tags:
+        description: Newline-separated list of image tags that were pushed, empty if no push occurred
+        value: ${{ jobs.build.outputs.tags }}
+      pushed:
+        description: Whether the image was pushed (true only on tagged commits)
+        value: ${{ jobs.build.outputs.pushed }}
 
 jobs:
   build:
@@ -41,7 +47,10 @@ jobs:
     permissions:
       contents: read
       packages: write
-      id-token: write
+    outputs:
+      digest: ${{ steps.build-and-push.outputs.digest }}
+      tags: ${{ steps.meta-tagged.outputs.tags }}
+      pushed: ${{ steps.tag.outputs.found }}
 
     steps:
       - name: Checkout repository
@@ -57,12 +66,6 @@ jobs:
           else
             echo "found=false" >> $GITHUB_OUTPUT
           fi
-
-      - name: Install cosign
-        if: steps.tag.outputs.found == 'true' && inputs.sign
-        uses: sigstore/cosign-installer@v3.5.0
-        with:
-          cosign-release: 'v2.2.4'
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -121,9 +124,3 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Sign the published Docker image
-        if: steps.tag.outputs.found == 'true' && inputs.sign
-        env:
-          TAGS: ${{ steps.meta-tagged.outputs.tags }}
-          DIGEST: ${{ steps.build-and-push.outputs.digest }}
-        run: echo "${TAGS}" | xargs -I {} cosign sign --yes {}@${DIGEST}

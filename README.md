@@ -24,9 +24,7 @@ Builds a Docker image but never pushes it to a registry. Use this to validate th
 
 Builds and **always pushes** the image. Uses the branch name as the Docker tag. The `:latest` tag is only updated when pushing to the configured default branch.
 
-The published image is always signed with [cosign](https://github.com/sigstore/cosign).
-
-> **Note:** If enabling `sign: true`, the caller must also grant `id-token: write` permission and requires a GitHub plan that supports OIDC (not available on free orgs).
+Outputs `digest` and `tags` so the optional `sign-container.yml` workflow can be chained.
 
 #### Inputs
 
@@ -38,7 +36,6 @@ The published image is always signed with [cosign](https://github.com/sigstore/c
 | `dockerfile` | `Dockerfile` | Path to the Dockerfile |
 | `default-branch` | `main` | Branch on which the `:latest` tag is pushed |
 | `image-authors` | _(empty)_ | Value for the `org.opencontainers.image.authors` label |
-| `sign` | `false` | Sign the published image with cosign (requires OIDC — not available on free orgs) |
 
 #### Secrets
 
@@ -47,15 +44,20 @@ The published image is always signed with [cosign](https://github.com/sigstore/c
 | `username` | Yes | Registry username |
 | `password` | Yes | Registry password or token |
 
+#### Outputs
+
+| Output | Description |
+|--------|-------------|
+| `digest` | Image digest (`sha256:...`) |
+| `tags` | Newline-separated list of pushed tags |
+
 ---
 
 ### build-and-push-tagged-container.yml
 
 Builds the image on every push. Only pushes to the registry when the commit carries a Git tag. On tagged commits the image receives both the tag name and `:latest`.
 
-The published image is always signed with [cosign](https://github.com/sigstore/cosign).
-
-> **Note:** If enabling `sign: true`, the caller must also grant `id-token: write` permission and requires a GitHub plan that supports OIDC (not available on free orgs).
+Outputs `digest`, `tags`, and `pushed` so the optional `sign-container.yml` workflow can be chained conditionally.
 
 #### Inputs
 
@@ -66,7 +68,6 @@ The published image is always signed with [cosign](https://github.com/sigstore/c
 | `context` | `.` | Docker build context path |
 | `dockerfile` | `Dockerfile` | Path to the Dockerfile |
 | `image-authors` | _(empty)_ | Value for the `org.opencontainers.image.authors` label |
-| `sign` | `false` | Sign the published image with cosign (requires OIDC — not available on free orgs) |
 
 #### Secrets
 
@@ -75,6 +76,32 @@ The published image is always signed with [cosign](https://github.com/sigstore/c
 | `username` | Yes | Registry username |
 | `password` | Yes | Registry password or token |
 
+#### Outputs
+
+| Output | Description |
+|--------|-------------|
+| `digest` | Image digest (`sha256:...`), empty if no push occurred |
+| `tags` | Newline-separated list of pushed tags, empty if no push occurred |
+| `pushed` | `true` if the image was pushed (i.e. commit was tagged), `false` otherwise |
+
+---
+
+### sign-container.yml
+
+Signs a previously pushed image using [cosign](https://github.com/sigstore/cosign) keyless signing via GitHub OIDC.
+
+> **Requires OIDC:** works on personal repos and paid orgs. Free orgs do not support OIDC token issuance.  
+> The caller must grant `id-token: write` and `packages: write`.
+
+Intended to be used as a second job after `build-and-push-container.yml` or `build-and-push-tagged-container.yml`, consuming their outputs.
+
+#### Inputs
+
+| Input | Required | Description |
+|-------|----------|-------------|
+| `tags` | Yes | Newline-separated list of full image tags to sign |
+| `digest` | Yes | Image digest (`sha256:...`) |
+
 ---
 
 ## Examples
@@ -82,5 +109,5 @@ The published image is always signed with [cosign](https://github.com/sigstore/c
 | File | Demonstrates |
 |------|-------------|
 | `build-container-example.yml` | Build-only on every push/PR |
-| `build-and-push-container-example.yml` | Always push, branch tag + `:latest` on main |
-| `build-and-push-tagged-container-example.yml` | Push only on tagged commits |
+| `build-and-push-container-example.yml` | Always push, branch tag + `:latest` on main (optional signing) |
+| `build-and-push-tagged-container-example.yml` | Push only on tagged commits (optional signing) |

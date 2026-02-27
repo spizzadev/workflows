@@ -1,0 +1,32 @@
+name: Sign Container
+
+on:
+  workflow_call:
+    inputs:
+      tags:
+        required: true
+        type: string
+        description: Newline-separated list of full image tags to sign
+      digest:
+        required: true
+        type: string
+        description: Image digest (sha256:...)
+
+jobs:
+  sign:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      packages: write
+
+    steps:
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3.5.0
+        with:
+          cosign-release: 'v2.2.4'
+
+      - name: Sign the published Docker image
+        env:
+          TAGS: ${{ inputs.tags }}
+          DIGEST: ${{ inputs.digest }}
+        run: echo "${TAGS}" | xargs -I {} cosign sign --yes {}@${DIGEST}

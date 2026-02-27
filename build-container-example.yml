@@ -13,4 +13,4 @@ jobs:
     uses: spizzadev/workflows/.github/workflows/build-container.yml@main
     with:
       image-name: ${{ github.repository }}
-      image-authors: my-org
+      image-authors: ${{ github.actor }}
