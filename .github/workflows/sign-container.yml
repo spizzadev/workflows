@@ -11,6 +11,17 @@ on:
         required: true
         type: string
         description: Image digest (sha256:...)
+      registry:
+        type: string
+        default: ghcr.io
+        description: Container registry URL
+    secrets:
+      username:
+        required: true
+        description: Registry username
+      password:
+        required: true
+        description: Registry password or token
 
 jobs:
   sign:
@@ -24,6 +35,13 @@ jobs:
         uses: sigstore/cosign-installer@v3.5.0
         with:
           cosign-release: 'v2.2.4'
+
+      - name: Log into registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ inputs.registry }}
+          username: ${{ secrets.username }}
+          password: ${{ secrets.password }}
 
       - name: Sign the published Docker image
         run: cosign sign --yes ${{ inputs.image }}@${{ inputs.digest }}

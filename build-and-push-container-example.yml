@@ -34,3 +34,6 @@ jobs:
   #   with:
   #     image: ghcr.io/${{ github.repository }}
   #     digest: ${{ needs.build-and-push.outputs.digest }}
+  #   secrets:
+  #     username: ${{ github.actor }}
+  #     password: ${{ secrets.GITHUB_TOKEN }}

@@ -99,6 +99,14 @@ Intended to be used as a second job after `build-and-push-container.yml` or `bui
 |-------|----------|-------------|
 | `image` | Yes | Full image reference without tag, e.g. `ghcr.io/my-org/my-app` |
 | `digest` | Yes | Image digest (`sha256:...`) |
+| `registry` | No (`ghcr.io`) | Container registry URL |
+
+#### Secrets
+
+| Secret | Required | Description |
+|--------|----------|-------------|
+| `username` | Yes | Registry username |
+| `password` | Yes | Registry password or token |
 
 ---
 
